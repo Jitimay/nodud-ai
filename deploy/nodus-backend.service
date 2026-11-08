@@ -1,0 +1,30 @@
+# systemd unit for the Nodus AI backend.
+# Install: sudo cp deploy/nodus-backend.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now nodus-backend
+[Unit]
+Description=Nodus AI backend (FastAPI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nodus
+Group=nodus
+WorkingDirectory=/opt/nodus-ai/backend
+# One worker: SQLite has a single writer. Move to PostgreSQL before adding workers.
+ExecStart=/opt/nodus-ai/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers
+Restart=always
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/nodus-ai/backend
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

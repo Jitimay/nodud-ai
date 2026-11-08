@@ -1,0 +1,24 @@
+# Caddy reverse proxy: automatic HTTPS (Let's Encrypt) in front of the backend.
+# Install: sudo cp deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Replace api.example.org with your domain (its DNS A record must point to this server).
+api.example.org {
+	encode gzip
+
+	request_body {
+		max_size 64KB
+	}
+
+	# Optional: allow the operator API only from your office IP (in addition to ADMIN_TOKEN).
+	# Uncomment and set your IP:
+	# @admin_blocked {
+	# 	path /v1/admin/*
+	# 	not remote_ip 203.0.113.10
+	# }
+	# respond @admin_blocked 403
+
+	reverse_proxy 127.0.0.1:8000
+
+	log {
+		output file /var/log/caddy/nodus-access.log
+	}
+}
